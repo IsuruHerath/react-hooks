@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback } from 'react';
+import React, { useReducer, useCallback, useMemo } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -45,7 +45,7 @@ function Ingredients() {
     //setIngredients(filteredIngredients);
   }, []);
 
-  const addIngredientHandler = ingredient => {
+  const addIngredientHandler = useCallback(ingredient => {
     dispatchHttp({type: 'SEND'});
     // setIsLoading(true);
     fetch('https://react-hooks-a8c80.firebaseio.com/ingredients.json', {
@@ -63,9 +63,9 @@ function Ingredients() {
       //   { id: responseData.name, ...ingredient }
       // ]);
     });
-  };
+  }, []);
 
-  const removeIngredient = id => {
+  const removeIngredientHandler = useCallback(id => {
     dispatchHttp({type: 'SEND'});
     // setIsLoading(true);
     fetch(`https://react-hooks-a8c80.firebaseio.com/ingredients/${id}.json`, {
@@ -82,12 +82,21 @@ function Ingredients() {
       // setIsLoading(false);
       // setError("Something went wrong.");
     });
-  }
+  }, []);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatchHttp({type: 'ERROR', error: null});
     // setError();
-  }
+  }, []);
+
+  const ingredientList = useMemo(() => {
+    return (
+      <IngredientList
+        ingredients={userIngredients}
+        onRemoveItem={removeIngredientHandler}
+      />
+    );
+  }, [userIngredients, removeIngredientHandler]);
 
   return (
     <div className="App">
@@ -98,7 +107,7 @@ function Ingredients() {
 
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler}/>
-        <IngredientList ingredients={userIngredients} onRemoveItem={removeIngredient}/>
+        {ingredientList}
       </section>
     </div>
   );
